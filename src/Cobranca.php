@@ -4,32 +4,44 @@ namespace insign\BB;
 
 use stdClass;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
+// use Psr\Http\Message\ResponseInterface; // Removed type hint
 
 class Cobranca
 {
-  protected Client $httpClient;
+  protected $httpClient;
+  protected $clientID;
+  protected $clientSecret;
+  protected $developerKey;
+  protected $production;
 
   public function __construct(
-    private string $clientID,
-    private string $clientSecret,
-    private string $developerKey,
-    protected bool $production = FALSE
+    $clientID,
+    $clientSecret,
+    $developerKey,
+    $production = FALSE
   )
   {
+    $this->clientID = $clientID;
+    $this->clientSecret = $clientSecret;
+    $this->developerKey = $developerKey;
+    $this->production = $production;
+
+    // Updated for Guzzle 5.x compatibility (base_url and defaults)
     $this->setHttpClient(new Client([
-                                      'base_uri' => $this->getUrlApi(),
-                                      'verify'   => $this->isProduction(),
+                                      'base_url' => $this->getUrlApi(), 
+                                      'defaults' => [
+                                          'verify'   => $this->isProduction(),
+                                      ],
                                     ]));
 
   }
 
-  public function getUrlToken(): string
+  public function getUrlToken()
   {
     return "https://oauth." . ($this->isProduction() ? '' : 'sandbox.') . "bb.com.br/oauth/token";
   }
 
-  public function getUrlApi(): string
+  public function getUrlApi()
   {
     return "https://api." . ($this->isProduction() ? '' : 'sandbox.') . "bb.com.br/";
   }
@@ -46,31 +58,34 @@ class Cobranca
       'scope'      => "cobrancas.boletos-info cobrancas.boletos-requisicao",
     ];
 
+    // Converted form_params to a raw body string for better Guzzle 5 compatibility
     $response = $this->getHttpClient()->post(
       $this->getUrlToken(),
       [
         'headers'     => $headers,
-        'form_params' => $body,
+        'body' => http_build_query($body),
       ]
     );
 
-    return json_decode($response->getBody()->getContents());
+    // Removed getContents() to rely on the Guzzle 5.x response body object
+    return json_decode($response->getBody());
   }
 
-  public function registrarBoleto(array $campos): stdClass
+  public function registrarBoleto(array $campos)
   {
+    // Removed named arguments (uri:, options:)
     $response = $this->getHttpClient()->post(
-      uri    : "cobrancas/v2/boletos?gw-dev-app-key={$this->developerKey}",
-      options: [
-                 "headers" => $this->getAuthHeaders(),
-                 "json"    => $campos,
-               ]
+      "cobrancas/v2/boletos?gw-dev-app-key={$this->developerKey}",
+      [
+        "headers" => $this->getAuthHeaders(),
+        "json"    => $campos,
+      ]
     );
 
     return $this->processAnswer($response);
   }
 
-  public function alterarBoleto($id, array $campos): stdClass
+  public function alterarBoleto($id, array $campos)
   {
     $response = $this->getHttpClient()->patch(
       "cobrancas/v2/boletos/{$id}?gw-dev-app-key={$this->developerKey}",
@@ -83,7 +98,7 @@ class Cobranca
     return $this->processAnswer($response);
   }
 
-  public function verBoleto(int|string $id, int|string $convenio): stdClass
+  public function verBoleto($id, $convenio)
   {
     $response = $this->getHttpClient()->get(
       "cobrancas/v2/boletos/{$id}?gw-dev-app-key={$this->developerKey}&numeroConvenio={$convenio}",
@@ -95,7 +110,7 @@ class Cobranca
     return $this->processAnswer($response);
   }
 
-  public function baixarBoleto(int|string $id, int|string $convenio): stdClass
+  public function baixarBoleto($id, $convenio)
   {
     $response = $this->getHttpClient()->post(
       "cobrancas/v2/boletos/{$id}/baixar?gw-dev-app-key={$this->developerKey}",
@@ -105,25 +120,26 @@ class Cobranca
       ]
     );
 
-    return json_decode($response->getBody()->getContents());
+    // Removed getContents() to rely on the Guzzle 5.x response body object
+    return json_decode($response->getBody());
   }
 
-  public function setProduction(bool $production): void
+  public function setProduction($production)
   {
     $this->production = $production;
   }
 
-  public function isProduction(): bool
+  public function isProduction()
   {
     return $this->production;
   }
 
-  public function getBasicHash(): string
+  public function getBasicHash()
   {
     return base64_encode("{$this->clientID}:{$this->clientSecret}");
   }
 
-  public function getAuthHeaders(): array
+  public function getAuthHeaders()
   {
     return [
       "Authorization"               => "Bearer " . $this->getTokenAccess()->access_token,
@@ -132,17 +148,18 @@ class Cobranca
     ];
   }
 
-  public function processAnswer(ResponseInterface $response): stdClass
+  public function processAnswer($response)
   {
-    return json_decode($response->getBody()->getContents(), FALSE, 512, JSON_THROW_ON_ERROR);
+    // Simplified for PHP 5.4.9 (removed JSON_THROW_ON_ERROR and extra args)
+    return json_decode($response->getBody()->getContents());
   }
 
-  public function getHttpClient(): Client
+  public function getHttpClient()
   {
     return $this->httpClient;
   }
 
-  public function setHttpClient(Client $httpClient): void
+  public function setHttpClient($httpClient)
   {
     $this->httpClient = $httpClient;
   }
