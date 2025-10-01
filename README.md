@@ -1,18 +1,22 @@
 # Integração com a API de Cobranças do Banco do Brasil
+(Versão Legacy para PHP 5.4.9)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/insign/integracao-bb/test.yml?style=for-the-badge&label=TEST)
 
-## Instalação
+***NOTA IMPORTANTE:*** *Esta é uma versão legada do projeto, modificada para ser compatível com PHP 5.4.9 e utiliza dependências mais antigas e sem suporte (Guzzle 5.x). Recomenda-se migrar para uma versão moderna do PHP (8.x+) e as versões mais recentes das bibliotecas para obter maior segurança e melhor desempenho.*
+
+## Instalação (Requer PHP >= 5.4.9)
 
 ```bash
 composer require insign/integracao-bb
-```
 
 ## Instanciar a classe
 
 ```php
 use insign\BB\Cobranca;
 
-$cobranca = new Cobranca('clientId', 'clientSecret', 'developerKey', production: false);
+// Note: named arguments 'production: false' and constructor property promotion
+// are not available in PHP 5.4.
+$cobranca = new Cobranca('clientId', 'clientSecret', 'developerKey', false);
 ```
 
 ## Gerar Token
@@ -26,9 +30,10 @@ $token = $cobranca->getTokenAccess();
 ## Registrar Boleto
 
 ```php
-// https://apoio.developers.bb.com.br/referency/post/5f4fb7f5b71fb5001268ca44
+// [https://apoio.developers.bb.com.br/referency/post/5f4fb7f5b71fb5001268ca44](https://apoio.developers.bb.com.br/referency/post/5f4fb7f5b71fb5001268ca44)
 $convenio = '3128557';
-$idBoleto = '000' . $convenio . random_int(1000000000, 9999999999);
+// random_int is PHP 7.0+. Using rand() for PHP 5.4 compatibility.
+$idBoleto = '000' . $convenio . rand(1000000000, 9999999999); 
 
 $registro = [
   'numeroConvenio'                       => $convenio,
@@ -213,7 +218,7 @@ Contribua com esta integração no [GitHub](https://github.com/insign/integracao
 Para enviar uma nova versão execute `make push` (nova tag patch com seus commits)
 
 ## Testes
-Execute os testes com [Pest](https://pestphp.com/) executando: `make test`
+Execute os testes com **PHPUnit 4.x** executando: `make test`
 
 ## Licença
 [GNU Affero General Public License v3.0](LICENSE)
