@@ -1,6 +1,6 @@
 {
     "name": "insign/integracao-bb",
-    "description": "Biblioteca para facilitar a integração com a API de cobranças do Banco do Brasil",
+    "description": "Biblioteca para facilitar a integração com a API de cobranças do Banco do Brasil - PHP 5.4 Legacy Version",
     "type": "library",
     "license": "AGPL-3.0-or-later",
     "authors": [
@@ -9,9 +9,6 @@
             "email": "integracao-bb@helio.me"
         }
     ],
-    "scripts": {
-        "test": "vendor/bin/pest"
-    },
     "autoload": {
         "psr-4": {
             "insign\\BB\\": "src/"
@@ -19,17 +16,14 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": ">=8.3",
-        "guzzlehttp/guzzle": "^7",
+        "php": ">=5.4.9,<7.0.0",
+        "guzzlehttp/guzzle": "~5.3",
         "ext-json": "*"
     },
     "require-dev": {
-        "psy/psysh": "@stable",
-        "pestphp/pest": "^2.35"
+        "phpunit/phpunit": "~4.0"
     },
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
+    "scripts": {
+        "test": "vendor/bin/phpunit"
     }
 }
