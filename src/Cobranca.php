@@ -59,17 +59,17 @@ class Cobranca
       'scope'      => "cobrancas.boletos-info cobrancas.boletos-requisicao",
     ];
 
-    // Converted form_params to a raw body string for better Guzzle 5 compatibility
     $response = $this->getHttpClient()->post(
       $this->getUrlToken(),
       [
         'headers'     => $headers,
-        'body' => http_build_query($body),
+        // *** ADJUSTMENT 1: Use 'form_params' for Guzzle 6 token requests ***
+        'form_params' => $body, 
       ]
     );
 
-    // Removed getContents() to rely on the Guzzle 5.x response body object
-    return json_decode($response->getBody());
+    // *** ADJUSTMENT 2: Use getContents() for Guzzle 6 body retrieval ***
+    return json_decode($response->getBody()->getContents()); 
   }
 
   public function registrarBoleto(array $campos)
@@ -121,9 +121,10 @@ class Cobranca
       ]
     );
 
-    // Removed getContents() to rely on the Guzzle 5.x response body object
-    return json_decode($response->getBody());
+    // *** ADJUSTMENT 3: Use getContents() for Guzzle 6 body retrieval ***
+    return json_decode($response->getBody()->getContents());
   }
+
 
   public function setProduction($production)
   {
