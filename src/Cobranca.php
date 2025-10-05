@@ -26,12 +26,13 @@ class Cobranca
     $this->developerKey = $developerKey;
     $this->production = $production;
 
-    // Updated for Guzzle 5.x compatibility (base_url and defaults)
+    // *** REVERT FIX: TLS 1.2 is now supported by PHP 5.6.40, 
+    // we re-enable proper verification logic. ***
+    
+    // Guzzle 6.x uses 'base_uri' and does not require the 'defaults' wrapper.
     $this->setHttpClient(new Client([
-                                      'base_url' => $this->getUrlApi(), 
-                                      'defaults' => [
-                                          'verify'   => $this->isProduction(),
-                                      ],
+                                      'base_uri' => $this->getUrlApi(), 
+                                      'verify'   => $this->isProduction(), // Revert to using the secure production flag
                                     ]));
 
   }
