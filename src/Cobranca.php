@@ -150,11 +150,13 @@ class Cobranca
     ];
   }
 
-  public function processAnswer($response)
+  public function processAnswer($response) // Removed ResponseInterface type hint
   {
-    // Simplified for PHP 5.4.9 (removed JSON_THROW_ON_ERROR and extra args)
-    return json_decode($response->getBody()->getContents());
+    // Use the maximum recursion depth (512) and the default decoding parameters (FALSE for associative array)
+    // Removed JSON_THROW_ON_ERROR for PHP 5.6 compatibility.
+    return json_decode($response->getBody()->getContents(), FALSE, 512); 
   }
+  
 
   public function getHttpClient()
   {
